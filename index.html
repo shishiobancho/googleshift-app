@@ -1,1 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIFFテスト</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
+    .box { background: #f0f4f8; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+    .success { color: green; font-weight: bold; }
+    .error { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>🚀 GitHub Pages LIFF認証テスト</h2>
+  
+  <div class="box" id="status">LIFFの初期化を準備中...</div>
+  <div class="box" id="profile-box" style="display:none;">
+    <strong>👤 ログイン成功！</strong><br>
+    <span id="profile-data"></span>
+  </div>
+  <div class="box" id="gas-box" style="display:none;">
+    <strong>📊 GAS通信結果:</strong><br>
+    <span id="gas-data">通信中...</span>
+  </div>
 
+  <script>
+    // URLのパラメータから liffId と gasUrl を取得する関数
+    const urlParams = new URLSearchParams(window.location.search);
+    const liffId = urlParams.get('liffId') || "2010578436-C5btR2HU"; // デフォルトのLIFF ID
+    const gasUrl = urlParams.get('gasUrl'); // 今後拡張用
+
+    function setStatus(msg) {
+      document.getElementById('status').innerHTML = msg;
+    }
+
+    window.onload = function() {
+      setStatus("liff.init() を実行中...");
+
+      liff.init({ liffId: liffId })
+        .then(() => {
+          setStatus("<span class='success'>✅ LIFF初期化 成功！</span>");
+
+          if (!liff.isLoggedIn()) {
+            setStatus("未ログインのためログイン画面へ推移します...");
+            liff.login();
+            return;
+          }
+
+          return liff.getProfile();
+        })
+        .then(profile => {
+          if (profile) {
+            document.getElementById('profile-box').style.display = 'block';
+            document.getElementById('profile-data').innerHTML = `
+              表示名: <b>${profile.displayName}</b><br>
+              User ID: <small>${profile.userId}</small>
+            `;
+
+            // 今後のGAS通信テスト用プレースホルダー
+            document.getElementById('gas-box').style.display = 'block';
+            document.getElementById('gas-data').innerText = "LIFF認証が正常完了しました。GAS連携の準備完了です！";
+          }
+        })
+        .catch(err => {
+          setStatus(`<span class='error'>❌ エラー発生: ${err}</span>`);
+        });
+    };
+  </script>
+</body>
+</html>

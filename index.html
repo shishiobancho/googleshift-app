@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- 💡 タイトルを変更 -->
   <title>Googleシフト[カレンダー]</title>
   
   <!-- LINE LIFF SDK -->
@@ -23,7 +22,11 @@
       --line-green-light: #e8f9ee;
       --line-green-dark: #05b34c;
       --bg-color: #f3f5f7;
-      --sky-blue-bg: #eef7fe; /* 💡 薄い空色 */
+      
+      /* 💡 外枠用のハッキリした爽やかな空色 */
+      --sky-blue-bg: #E0F2FE; 
+      --sky-blue-border: #BAE6FD;
+
       --card-bg: #ffffff;
       --text-main: #2b2b2b;
       --text-sub: #777777;
@@ -48,10 +51,10 @@
       border: 1px solid #eaeaea;
     }
 
-    /* 💡 月表エリア＆詳細エリアの背景を「薄い空色」に */
+    /* 💡 外側のカード背景（しっかりわかる鮮やかな空色） */
     .card-sky {
       background-color: var(--sky-blue-bg) !important;
-      border: 1px solid #dbeafe !important;
+      border: 1px solid var(--sky-blue-border) !important;
     }
 
     /* ヘッダー・ユーザー情報 */
@@ -69,12 +72,20 @@
       border-radius: 12px;
     }
 
-    /* カレンダー エリア */
+    /* 💡 カレンダー本体の領域調整 */
     #calendar {
       max-width: 100%;
-      background: transparent; /* 背景になじませる */
     }
     
+    /* 💡 カレンダーのマス目・テーブル部分を「純白」に固定 */
+    .fc .fc-view-harness,
+    .fc .fc-scrollgrid {
+      background-color: #ffffff !important;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
     /* FullCalendarデザインのLINE風カスタマイズ */
     .fc .fc-toolbar-title { 
       font-size: 1.15rem !important; 
@@ -94,10 +105,11 @@
       background-color: var(--line-green-dark) !important;
     }
     
-    /* 💡 曜日ヘッダー＆日付のカラー設定（日曜：赤、土曜：青） */
+    /* 曜日ヘッダー＆日付のカラー設定（日曜：赤、土曜：青） */
     .fc .fc-col-header-cell-cushion {
       font-weight: 800;
       font-size: 0.85rem;
+      padding: 8px 0 !important;
     }
     .fc-daygrid-day-number { 
       font-size: 0.85rem; 
@@ -131,15 +143,14 @@
 
     /* 当日の背景ハイライト */
     .fc .fc-day-today {
-      background-color: #ffffff !important;
-      border-radius: 8px;
+      background-color: #f0fdf4 !important;
     }
 
     /* 下エリア：日別詳細リスト */
     .detail-header {
       font-size: 1.05rem;
       font-weight: 800;
-      border-bottom: 2px dashed #d0e3f7;
+      border-bottom: 2px dashed #b9dcf2;
       padding-bottom: 10px;
       margin-bottom: 12px;
       display: flex;
@@ -218,12 +229,12 @@
     </div>
   </div>
 
-  <!-- 上エリア：月間カレンダー（自分のシフトのみ） 💡 空色背景適用 -->
+  <!-- 上エリア：月間カレンダー（自分のシフトのみ） -->
   <div id="calendar-card" class="card card-sky" style="display: none;">
     <div id="calendar"></div>
   </div>
 
-  <!-- 下エリア：選択日の全員分シフト詳細 💡 空色背景適用 -->
+  <!-- 下エリア：選択日の全員分シフト詳細 -->
   <div id="detail-card" class="card card-sky" style="display: none;">
     <div class="detail-header">
       📌 <span id="selected-date-text">----年--月--日</span> の出勤メンバー

@@ -4,45 +4,166 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>シフト閲覧システム</title>
+  
+  <!-- LINE LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  
+  <!-- FullCalendar CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+  
   <style>
-    body { font-family: sans-serif; padding: 20px; line-height: 1.6; background: #f8f9fa; }
-    .box { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e9ecef; }
-    .success { color: green; font-weight: bold; }
-    .error { color: red; font-weight: bold; }
-    pre { background: #f1f3f5; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 12px; }
+    :root {
+      --primary-color: #00c300; /* LINE Green */
+      --bg-color: #f4f5f7;
+      --card-bg: #ffffff;
+      --text-main: #333333;
+      --text-sub: #666666;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 12px;
+      line-height: 1.5;
+    }
+
+    /* 共通カードスタイル */
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    /* ヘッダー・ユーザー情報 */
+    .user-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .user-name {
+      color: #1DB954;
+    }
+
+    /* カレンダー エリア */
+    #calendar {
+      max-width: 100%;
+      background: white;
+    }
+    
+    /* FullCalendarデザイン調整 */
+    .fc .fc-toolbar-title { font-size: 1.1rem !important; font-weight: bold; }
+    .fc .fc-button-primary { background-color: #4a5568 !important; border: none !important; }
+    .fc-daygrid-day-number { font-size: 0.85rem; color: #4a5568; }
+    .fc-event {
+      border: none !important;
+      border-radius: 4px !important;
+      padding: 2px 4px !important;
+      font-size: 0.75rem !important;
+      text-align: center;
+      background-color: #3182ce !important; /* 自分のシフトの色 */
+      color: white !important;
+    }
+
+    /* 下エリア：日別詳細リスト */
+    .detail-header {
+      font-size: 1rem;
+      font-weight: bold;
+      border-bottom: 2px solid #edf2f7;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .staff-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+    }
+
+    .staff-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .staff-name { font-weight: 500; font-size: 0.9rem; }
+    .staff-shift { 
+      font-size: 0.8rem; 
+      background: #edf2f7; 
+      padding: 2px 6px; 
+      border-radius: 4px;
+      font-weight: bold;
+      color: #2d3748;
+    }
+    .is-me {
+      border-color: #3182ce;
+      background: #ebf8ff;
+    }
+
+    .empty-msg {
+      color: var(--text-sub);
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 15px 0;
+    }
+
+    /* ステータス表示 */
+    #status-card { text-align: center; font-size: 0.9rem; color: var(--text-sub); }
   </style>
 </head>
 <body>
-  <h2>📅 シフト閲覧システム</h2>
-  
-  <div class="box" id="status">認証処理中...</div>
 
-  <div class="box" id="profile-box" style="display:none;">
-    <strong>👤 ログインユーザー:</strong> <span id="user-name"></span>
+  <!-- ステータス表示 -->
+  <div id="status-card" class="card">
+    <span id="status-text">🔄 認証処理中...</span>
   </div>
 
-  <div class="box" id="shift-box" style="display:none;">
-    <strong>📊 取得したシフトデータ:</strong>
-    <pre id="shift-data">読み込み中...</pre>
+  <!-- ログインユーザー情報 -->
+  <div id="user-card" class="card" style="display: none;">
+    <div class="user-info">
+      <span>📅 シフト閲覧</span>
+      <span>ログイン: <span id="user-name-display" class="user-name">読み込み中</span></span>
+    </div>
+  </div>
+
+  <!-- 上エリア：月間カレンダー（自分のシフトのみ） -->
+  <div id="calendar-card" class="card" style="display: none;">
+    <div id="calendar"></div>
+  </div>
+
+  <!-- 下エリア：選択日の全員分シフト詳細 -->
+  <div id="detail-card" class="card" style="display: none;">
+    <div class="detail-header">
+      📌 <span id="selected-date-text">----年--月--日</span> の出勤メンバー
+    </div>
+    <div id="staff-list" class="staff-grid">
+      <!-- ここに全員のシフトが動的に表示されます -->
+    </div>
   </div>
 
   <script>
-    // 💡 URLのパラメータから GAS_URL と LIFF_ID を取得する（パラメータがなければフォールバック用を使用）
+    // URLからパラメータを取得（フォールバック付き）
     const urlParams = new URLSearchParams(window.location.search);
-    
-    // パラメータ ?gasUrl=... または固定値
-    const GAS_URL = urlParams.get('gasUrl') || "https://script.google.com/macros/s/あなたのGASのID/exec";
-    
-    // パラメータ ?liffId=... または固定値
+    const GAS_URL = urlParams.get('gasUrl') || "https://script.google.com/macros/s/YOUR_GAS_ID/exec";
     const LIFF_ID = urlParams.get('liffId') || "2010578436-C5btR2HU";
 
-    function setStatus(msg) {
-      document.getElementById('status').innerHTML = msg;
-    }
+    let allEventsData = []; // GASから届いた全員の全データ
+    let myStaffName = "";   // 自分の名前
+    let calendar = null;    // FullCalendarのインスタンス
 
     window.onload = function() {
-      // 取得した LIFF_ID で初期化
       liff.init({ liffId: LIFF_ID })
         .then(() => {
           if (!liff.isLoggedIn()) {
@@ -53,33 +174,118 @@
         })
         .then(profile => {
           if (profile) {
-            setStatus("<span class='success'>✅ LIFF認証完了</span>");
-            document.getElementById('profile-box').style.display = 'block';
-            document.getElementById('user-name').innerText = `${profile.displayName} 様`;
+            document.getElementById('status-card').style.display = 'none';
+            document.getElementById('user-card').style.display = 'block';
+            document.getElementById('user-name-display').innerText = `${profile.displayName} 様`;
 
-            // 取得した GAS_URL を使ってデータを取得
+            // GASからシフトデータを取得
             fetchShiftData(profile.userId, profile.displayName);
           }
         })
         .catch(err => {
-          setStatus(`<span class='error'>❌ エラー発生: ${err}</span>`);
+          document.getElementById('status-text').innerText = "❌ エラー発生: " + err;
         });
     };
 
+    // GASからシフトデータを受信
     function fetchShiftData(userId, displayName) {
-      document.getElementById('shift-box').style.display = 'block';
-      
-      // API呼び出し用URLを作成
       const requestUrl = `${GAS_URL}?userId=${encodeURIComponent(userId)}&displayName=${encodeURIComponent(displayName)}`;
 
       fetch(requestUrl)
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
-          document.getElementById('shift-data').innerText = JSON.stringify(data, null, 2);
+          allEventsData = data.events || [];
+          myStaffName = data.myStaffName || "";
+
+          // 画面エリアを表示
+          document.getElementById('calendar-card').style.display = 'block';
+          document.getElementById('detail-card').style.display = 'block';
+
+          // カレンダー初期化＆描画
+          initCalendar();
+
+          // 本日の日付で詳細エリアを初期描画
+          const todayStr = new Date().toISOString().split('T')[0];
+          renderDailyDetail(todayStr);
         })
         .catch(err => {
-          document.getElementById('shift-data').innerText = "GASからのデータ取得に失敗しました: " + err;
+          alert("データ取得に失敗しました: " + err);
         });
+    }
+
+    // FullCalendar の初期化
+    function initCalendar() {
+      const calendarEl = document.getElementById('calendar');
+
+      // 自分のシフトデータだけをフィルタリング
+      const myEvents = allEventsData
+        .filter(item => item.staff === myStaffName)
+        .map(item => ({
+          title: item.shift,
+          start: item.date,
+          allDay: true
+        }));
+
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'ja',
+        height: 'auto',
+        headerToolbar: {
+          left: 'title',
+          center: '',
+          right: 'prev,today,next'
+        },
+        buttonText: {
+          today: '今日'
+        },
+        events: myEvents, // 自分のデータのみ描画
+        dateClick: function(info) {
+          // カレンダーの日付セルをタップした時の動き
+          renderDailyDetail(info.dateStr);
+        },
+        eventClick: function(info) {
+          // イベント（バッジ）を直接タップした時もその日の詳細を表示
+          const dateStr = info.event.startStr;
+          renderDailyDetail(dateStr);
+        }
+      });
+
+      calendar.render();
+    }
+
+    // 下エリア：指定した日付の「全員分」シフト詳細を描画
+    function renderDailyDetail(dateStr) {
+      document.getElementById('selected-date-text').innerText = formatDateJp(dateStr);
+      const listEl = document.getElementById('staff-list');
+      listEl.innerHTML = "";
+
+      // その日の全スタッフのシフトを抽出
+      const targetEvents = allEventsData.filter(item => item.date === dateStr);
+
+      if (targetEvents.length === 0) {
+        listEl.innerHTML = `<div class="empty-msg">この日のシフトデータ（または公開データ）はありません。</div>`;
+        return;
+      }
+
+      // 出勤メンバー一覧を作成
+      targetEvents.forEach(item => {
+        const isMe = (item.staff === myStaffName);
+        const div = document.createElement('div');
+        div.className = `staff-item ${isMe ? 'is-me' : ''}`;
+        div.innerHTML = `
+          <span class="staff-name">${item.staff}${isMe ? ' (自分)' : ''}</span>
+          <span class="staff-shift">${item.shift}</span>
+        `;
+        listEl.appendChild(div);
+      });
+    }
+
+    // 日付フォーマット調整 (yyyy-mm-dd ➔ yyyy年m月d日)
+    function formatDateJp(dateStr) {
+      if (!dateStr) return "";
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+      return `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
     }
   </script>
 </body>

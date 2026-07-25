@@ -28,15 +28,21 @@
   </div>
 
   <script>
-    // 💡 あなたのGASのウェブアプリURLをここに貼り付けます
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzZ6bZaVUEfJ3vw26NkP2sEK3wpV_PyseRE2H8aFxKsBEJZYA6dFrzupREdC-B2VgyZEA/exec";
-    const LIFF_ID = "2010578436-C5btR2HU";
+    // 💡 URLのパラメータから GAS_URL と LIFF_ID を取得する（パラメータがなければフォールバック用を使用）
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // パラメータ ?gasUrl=... または固定値
+    const GAS_URL = urlParams.get('gasUrl') || "https://script.google.com/macros/s/あなたのGASのID/exec";
+    
+    // パラメータ ?liffId=... または固定値
+    const LIFF_ID = urlParams.get('liffId') || "2010578436-C5btR2HU";
 
     function setStatus(msg) {
       document.getElementById('status').innerHTML = msg;
     }
 
     window.onload = function() {
+      // 取得した LIFF_ID で初期化
       liff.init({ liffId: LIFF_ID })
         .then(() => {
           if (!liff.isLoggedIn()) {
@@ -51,7 +57,7 @@
             document.getElementById('profile-box').style.display = 'block';
             document.getElementById('user-name').innerText = `${profile.displayName} 様`;
 
-            // GASからシフトデータを取得
+            // 取得した GAS_URL を使ってデータを取得
             fetchShiftData(profile.userId, profile.displayName);
           }
         })

@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>シフト閲覧システム</title>
+  <!-- 💡 タイトルを変更 -->
+  <title>Googleシフト[カレンダー]</title>
   
   <!-- LINE LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -22,6 +23,7 @@
       --line-green-light: #e8f9ee;
       --line-green-dark: #05b34c;
       --bg-color: #f3f5f7;
+      --sky-blue-bg: #eef7fe; /* 💡 薄い空色 */
       --card-bg: #ffffff;
       --text-main: #2b2b2b;
       --text-sub: #777777;
@@ -36,7 +38,7 @@
       line-height: 1.5;
     }
 
-    /* 共通カードスタイル（丸みを強めに） */
+    /* 共通カードスタイル */
     .card {
       background: var(--card-bg);
       border-radius: 16px;
@@ -44,6 +46,12 @@
       margin-bottom: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
       border: 1px solid #eaeaea;
+    }
+
+    /* 💡 月表エリア＆詳細エリアの背景を「薄い空色」に */
+    .card-sky {
+      background-color: var(--sky-blue-bg) !important;
+      border: 1px solid #dbeafe !important;
     }
 
     /* ヘッダー・ユーザー情報 */
@@ -64,7 +72,7 @@
     /* カレンダー エリア */
     #calendar {
       max-width: 100%;
-      background: white;
+      background: transparent; /* 背景になじませる */
     }
     
     /* FullCalendarデザインのLINE風カスタマイズ */
@@ -85,13 +93,30 @@
     .fc .fc-button-primary:hover, .fc .fc-button-primary:active {
       background-color: var(--line-green-dark) !important;
     }
+    
+    /* 💡 曜日ヘッダー＆日付のカラー設定（日曜：赤、土曜：青） */
+    .fc .fc-col-header-cell-cushion {
+      font-weight: 800;
+      font-size: 0.85rem;
+    }
     .fc-daygrid-day-number { 
       font-size: 0.85rem; 
       font-weight: 700;
       color: #555555; 
     }
     
-    /* 自分のシフトバッジ（可愛く丸っこく） */
+    /* 日曜日 (赤) */
+    .fc-day-sun .fc-col-header-cell-cushion,
+    .fc-day-sun .fc-daygrid-day-number {
+      color: #e53e3e !important;
+    }
+    /* 土曜日 (青) */
+    .fc-day-sat .fc-col-header-cell-cushion,
+    .fc-day-sat .fc-daygrid-day-number {
+      color: #3182ce !important;
+    }
+
+    /* 自分のシフトバッジ */
     .fc-event {
       border: none !important;
       border-radius: 10px !important;
@@ -104,16 +129,17 @@
       box-shadow: 0 2px 4px rgba(6, 199, 85, 0.25);
     }
 
-    /* 当日の背景をLINE風にハイライト */
+    /* 当日の背景ハイライト */
     .fc .fc-day-today {
-      background-color: #f0fdf4 !important;
+      background-color: #ffffff !important;
+      border-radius: 8px;
     }
 
     /* 下エリア：日別詳細リスト */
     .detail-header {
       font-size: 1.05rem;
       font-weight: 800;
-      border-bottom: 2px dashed #eef0f2;
+      border-bottom: 2px dashed #d0e3f7;
       padding-bottom: 10px;
       margin-bottom: 12px;
       display: flex;
@@ -129,8 +155,8 @@
     }
 
     .staff-item {
-      background: #f9fbf9;
-      border: 1px solid #e2ece5;
+      background: #ffffff;
+      border: 1px solid #dce7f5;
       border-radius: 12px;
       padding: 10px 12px;
       display: flex;
@@ -145,7 +171,7 @@
     }
     .staff-shift { 
       font-size: 0.78rem; 
-      background: #eef2ef; 
+      background: #f0f4f9; 
       padding: 3px 8px; 
       border-radius: 8px;
       font-weight: 800;
@@ -187,18 +213,18 @@
   <!-- ログインユーザー情報 -->
   <div id="user-card" class="card" style="display: none;">
     <div class="user-info">
-      <span>📅 シフト閲覧</span>
+      <span>📅 Googleシフト[カレンダー]</span>
       <span>ログイン: <span id="user-name-display" class="user-name">読み込み中</span></span>
     </div>
   </div>
 
-  <!-- 上エリア：月間カレンダー（自分のシフトのみ） -->
-  <div id="calendar-card" class="card" style="display: none;">
+  <!-- 上エリア：月間カレンダー（自分のシフトのみ） 💡 空色背景適用 -->
+  <div id="calendar-card" class="card card-sky" style="display: none;">
     <div id="calendar"></div>
   </div>
 
-  <!-- 下エリア：選択日の全員分シフト詳細 -->
-  <div id="detail-card" class="card" style="display: none;">
+  <!-- 下エリア：選択日の全員分シフト詳細 💡 空色背景適用 -->
+  <div id="detail-card" class="card card-sky" style="display: none;">
     <div class="detail-header">
       📌 <span id="selected-date-text">----年--月--日</span> の出勤メンバー
     </div>

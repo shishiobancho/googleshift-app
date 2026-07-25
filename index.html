@@ -224,7 +224,7 @@
   <!-- ログインユーザー情報 -->
   <div id="user-card" class="card" style="display: none;">
     <div class="user-info">
-      <span>📅 Googleシフト[カレンダー]</span>
+      <span>📅 施設名または店舗名</span>
       <span>ログイン: <span id="user-name-display" class="user-name">読み込み中</span></span>
     </div>
   </div>
@@ -267,7 +267,7 @@
           if (profile) {
             document.getElementById('status-card').style.display = 'none';
             document.getElementById('user-card').style.display = 'block';
-            document.getElementById('user-name-display').innerText = `${profile.displayName} 様`;
+            document.getElementById('user-name-display').innerText = `${profile.displayName} `;
 
             // GASからシフトデータを取得
             fetchShiftData(profile.userId, profile.displayName);

@@ -3,70 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LIFFテスト</title>
+  <title>シフト閲覧システム</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
-    .box { background: #f0f4f8; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+    body { font-family: sans-serif; padding: 20px; line-height: 1.6; background: #f8f9fa; }
+    .box { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e9ecef; }
     .success { color: green; font-weight: bold; }
     .error { color: red; font-weight: bold; }
+    pre { background: #f1f3f5; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 12px; }
   </style>
 </head>
 <body>
-  <h2>🚀 GitHub Pages LIFF認証テスト</h2>
+  <h2>📅 シフト閲覧システム</h2>
   
-  <div class="box" id="status">LIFFの初期化を準備中...</div>
+  <div class="box" id="status">認証処理中...</div>
+
   <div class="box" id="profile-box" style="display:none;">
-    <strong>👤 ログイン成功！</strong><br>
-    <span id="profile-data"></span>
+    <strong>👤 ログインユーザー:</strong> <span id="user-name"></span>
   </div>
-  <div class="box" id="gas-box" style="display:none;">
-    <strong>📊 GAS通信結果:</strong><br>
-    <span id="gas-data">通信中...</span>
+
+  <div class="box" id="shift-box" style="display:none;">
+    <strong>📊 取得したシフトデータ:</strong>
+    <pre id="shift-data">読み込み中...</pre>
   </div>
 
   <script>
-    // URLのパラメータから liffId と gasUrl を取得する関数
-    const urlParams = new URLSearchParams(window.location.search);
-    const liffId = urlParams.get('liffId') || "2010578436-C5btR2HU"; // デフォルトのLIFF ID
-    const gasUrl = urlParams.get('gasUrl'); // 今後拡張用
+    // 💡 あなたのGASのウェブアプリURLをここに貼り付けます
+    const GAS_URL = "<ここにGASのウェブアプリURLを貼る>";
+    const LIFF_ID = "2010578436-C5btR2HU";
 
     function setStatus(msg) {
       document.getElementById('status').innerHTML = msg;
     }
 
     window.onload = function() {
-      setStatus("liff.init() を実行中...");
-
-      liff.init({ liffId: liffId })
+      liff.init({ liffId: LIFF_ID })
         .then(() => {
-          setStatus("<span class='success'>✅ LIFF初期化 成功！</span>");
-
           if (!liff.isLoggedIn()) {
-            setStatus("未ログインのためログイン画面へ推移します...");
             liff.login();
             return;
           }
-
           return liff.getProfile();
         })
         .then(profile => {
           if (profile) {
+            setStatus("<span class='success'>✅ LIFF認証完了</span>");
             document.getElementById('profile-box').style.display = 'block';
-            document.getElementById('profile-data').innerHTML = `
-              表示名: <b>${profile.displayName}</b><br>
-              User ID: <small>${profile.userId}</small>
-            `;
+            document.getElementById('user-name').innerText = `${profile.displayName} 様`;
 
-            // 今後のGAS通信テスト用プレースホルダー
-            document.getElementById('gas-box').style.display = 'block';
-            document.getElementById('gas-data').innerText = "LIFF認証が正常完了しました。GAS連携の準備完了です！";
+            // GASからシフトデータを取得
+            fetchShiftData(profile.userId, profile.displayName);
           }
         })
         .catch(err => {
           setStatus(`<span class='error'>❌ エラー発生: ${err}</span>`);
         });
     };
+
+    function fetchShiftData(userId, displayName) {
+      document.getElementById('shift-box').style.display = 'block';
+      
+      // API呼び出し用URLを作成
+      const requestUrl = `${GAS_URL}?userId=${encodeURIComponent(userId)}&displayName=${encodeURIComponent(displayName)}`;
+
+      fetch(requestUrl)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('shift-data').innerText = JSON.stringify(data, null, 2);
+        })
+        .catch(err => {
+          document.getElementById('shift-data').innerText = "GASからのデータ取得に失敗しました: " + err;
+        });
+    }
   </script>
 </body>
 </html>

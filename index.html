@@ -11,17 +11,24 @@
   <!-- FullCalendar CDN -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   
+  <!-- Google Fonts（丸ゴシック：M PLUS Rounded 1c） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
+  
   <style>
     :root {
-      --primary-color: #00c300; /* LINE Green */
-      --bg-color: #f4f5f7;
+      --line-green: #06C755;
+      --line-green-light: #e8f9ee;
+      --line-green-dark: #05b34c;
+      --bg-color: #f3f5f7;
       --card-bg: #ffffff;
-      --text-main: #333333;
-      --text-sub: #666666;
+      --text-main: #2b2b2b;
+      --text-sub: #777777;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: 'M PLUS Rounded 1c', -apple-system, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-main);
       margin: 0;
@@ -29,13 +36,14 @@
       line-height: 1.5;
     }
 
-    /* 共通カードスタイル */
+    /* 共通カードスタイル（丸みを強めに） */
     .card {
       background: var(--card-bg);
-      border-radius: 12px;
-      padding: 14px;
+      border-radius: 16px;
+      padding: 16px;
       margin-bottom: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      border: 1px solid #eaeaea;
     }
 
     /* ヘッダー・ユーザー情報 */
@@ -44,10 +52,13 @@
       justify-content: space-between;
       align-items: center;
       font-size: 14px;
-      font-weight: bold;
+      font-weight: 700;
     }
     .user-name {
-      color: #1DB954;
+      color: var(--line-green);
+      background: var(--line-green-light);
+      padding: 3px 10px;
+      border-radius: 12px;
     }
 
     /* カレンダー エリア */
@@ -56,78 +67,121 @@
       background: white;
     }
     
-    /* FullCalendarデザイン調整 */
-    .fc .fc-toolbar-title { font-size: 1.1rem !important; font-weight: bold; }
-    .fc .fc-button-primary { background-color: #4a5568 !important; border: none !important; }
-    .fc-daygrid-day-number { font-size: 0.85rem; color: #4a5568; }
+    /* FullCalendarデザインのLINE風カスタマイズ */
+    .fc .fc-toolbar-title { 
+      font-size: 1.15rem !important; 
+      font-weight: 800 !important; 
+      color: var(--text-main);
+    }
+    .fc .fc-button-primary { 
+      background-color: var(--line-green) !important; 
+      border: none !important;
+      border-radius: 20px !important;
+      font-weight: 700 !important;
+      font-size: 0.85rem !important;
+      padding: 4px 12px !important;
+      box-shadow: 0 2px 4px rgba(6, 199, 85, 0.2);
+    }
+    .fc .fc-button-primary:hover, .fc .fc-button-primary:active {
+      background-color: var(--line-green-dark) !important;
+    }
+    .fc-daygrid-day-number { 
+      font-size: 0.85rem; 
+      font-weight: 700;
+      color: #555555; 
+    }
+    
+    /* 自分のシフトバッジ（可愛く丸っこく） */
     .fc-event {
       border: none !important;
-      border-radius: 4px !important;
-      padding: 2px 4px !important;
+      border-radius: 10px !important;
+      padding: 3px 6px !important;
       font-size: 0.75rem !important;
+      font-weight: 700 !important;
       text-align: center;
-      background-color: #3182ce !important; /* 自分のシフトの色 */
+      background-color: var(--line-green) !important;
       color: white !important;
+      box-shadow: 0 2px 4px rgba(6, 199, 85, 0.25);
+    }
+
+    /* 当日の背景をLINE風にハイライト */
+    .fc .fc-day-today {
+      background-color: #f0fdf4 !important;
     }
 
     /* 下エリア：日別詳細リスト */
     .detail-header {
-      font-size: 1rem;
-      font-weight: bold;
-      border-bottom: 2px solid #edf2f7;
-      padding-bottom: 8px;
-      margin-bottom: 10px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      border-bottom: 2px dashed #eef0f2;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       gap: 6px;
+      color: var(--text-main);
     }
 
     .staff-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+      gap: 10px;
     }
 
     .staff-item {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 8px 10px;
+      background: #f9fbf9;
+      border: 1px solid #e2ece5;
+      border-radius: 12px;
+      padding: 10px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .staff-name { font-weight: 500; font-size: 0.9rem; }
-    .staff-shift { 
-      font-size: 0.8rem; 
-      background: #edf2f7; 
-      padding: 2px 6px; 
-      border-radius: 4px;
-      font-weight: bold;
-      color: #2d3748;
+    .staff-name { 
+      font-weight: 700; 
+      font-size: 0.88rem; 
+      color: #444;
     }
+    .staff-shift { 
+      font-size: 0.78rem; 
+      background: #eef2ef; 
+      padding: 3px 8px; 
+      border-radius: 8px;
+      font-weight: 800;
+      color: #4f6354;
+    }
+    
+    /* 自分（ログインユーザー）のカード強調 */
     .is-me {
-      border-color: #3182ce;
-      background: #ebf8ff;
+      border: 1.5px solid var(--line-green);
+      background: var(--line-green-light);
+    }
+    .is-me .staff-name {
+      color: #036b2d;
+    }
+    .is-me .staff-shift {
+      background: var(--line-green);
+      color: white;
     }
 
     .empty-msg {
       color: var(--text-sub);
       font-size: 0.85rem;
+      font-weight: 500;
       text-align: center;
       padding: 15px 0;
     }
 
     /* ステータス表示 */
-    #status-card { text-align: center; font-size: 0.9rem; color: var(--text-sub); }
+    #status-card { text-align: center; font-size: 0.9rem; font-weight: 700; color: var(--text-sub); }
   </style>
 </head>
 <body>
 
   <!-- ステータス表示 -->
   <div id="status-card" class="card">
-    <span id="status-text">🔄 認証処理中...</span>
+    <span id="status-text">🌱 認証処理中...</span>
   </div>
 
   <!-- ログインユーザー情報 -->
@@ -240,11 +294,9 @@
         },
         events: myEvents, // 自分のデータのみ描画
         dateClick: function(info) {
-          // カレンダーの日付セルをタップした時の動き
           renderDailyDetail(info.dateStr);
         },
         eventClick: function(info) {
-          // イベント（バッジ）を直接タップした時もその日の詳細を表示
           const dateStr = info.event.startStr;
           renderDailyDetail(dateStr);
         }

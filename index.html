@@ -11,7 +11,7 @@
   <!-- FullCalendar CDN -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   
-  <!-- Google Fonts（丸ゴシック：M PLUS Rounded 1c） -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -29,9 +29,6 @@
       --card-bg: #ffffff;
       --text-main: #2b2b2b;
       --text-sub: #777777;
-
-      --orange-bg: #ff9800;
-      --orange-light: #fff3e0;
     }
 
     body {
@@ -43,7 +40,6 @@
       line-height: 1.5;
     }
 
-    /* 共通カードスタイル */
     .card {
       background: var(--card-bg);
       border-radius: 16px;
@@ -58,7 +54,6 @@
       border: 1px solid var(--sky-blue-border) !important;
     }
 
-    /* ヘッダー・ユーザー情報 */
     .user-info {
       display: flex;
       justify-content: space-between;
@@ -73,7 +68,6 @@
       border-radius: 12px;
     }
 
-    /* カレンダー領域 */
     #calendar {
       max-width: 100%;
     }
@@ -100,40 +94,25 @@
       padding: 4px 12px !important;
       box-shadow: 0 2px 4px rgba(6, 199, 85, 0.2);
     }
-    .fc .fc-button-primary:hover, .fc .fc-button-primary:active {
-      background-color: var(--line-green-dark) !important;
-    }
     
-    /* 曜日・日付のカラー設定 */
-    .fc .fc-col-header-cell-cushion {
-      font-weight: 800;
-      font-size: 0.85rem;
-      padding: 8px 0 !important;
-    }
     .fc-daygrid-day-number { 
       font-size: 0.85rem; 
       font-weight: 700;
       color: #555555; 
     }
     
-    /* 日曜日 (赤) */
     .fc-day-sun .fc-col-header-cell-cushion,
-    .fc-day-sun .fc-daygrid-day-number {
-      color: #e53e3e !important;
-    }
-    /* 土曜日 (青) */
+    .fc-day-sun .fc-daygrid-day-number { color: #e53e3e !important; }
     .fc-day-sat .fc-col-header-cell-cushion,
-    .fc-day-sat .fc-daygrid-day-number {
-      color: #3182ce !important;
-    }
+    .fc-day-sat .fc-daygrid-day-number { color: #3182ce !important; }
 
-    /* バッジデザイン */
+    /* ★ 視認性を大幅強化した申請中バッジ（月カレンダー用） */
     .fc-event {
       border: none !important;
-      border-radius: 8px !important;
-      padding: 2px 4px !important;
-      font-size: 0.72rem !important;
-      font-weight: 700 !important;
+      border-radius: 6px !important;
+      padding: 3px 4px !important;
+      font-size: 0.75rem !important;
+      font-weight: 800 !important;
       text-align: center;
       margin-top: 2px !important;
     }
@@ -142,37 +121,53 @@
     .event-confirmed {
       background-color: var(--line-green) !important;
       color: white !important;
-      box-shadow: 0 2px 4px rgba(6, 199, 85, 0.25);
     }
 
-    /* 2. 申請中バッジ（オレンジ・点線） */
+    /* 2. 申請中バッジ（濃い文字・しっかりした枠線） */
     .event-request {
-      background-color: var(--orange-light) !important;
-      color: #d97706 !important;
-      border: 1.5px dashed var(--orange-bg) !important;
+      background-color: #ffedd5 !important; /* くっきりした淡いオレンジ */
+      color: #9a3412 !important;            /* 超濃いオレンジ文字 */
+      border: 1.5px dashed #ea580c !important; /* 濃いオレンジ破線 */
     }
 
-    /* 当日の背景ハイライト */
-    .fc .fc-day-today {
-      background-color: #f0fdf4 !important;
-    }
+    .fc .fc-day-today { background-color: #f0fdf4 !important; }
 
-    /* 下エリア：日別詳細リスト */
-    .detail-header {
-      font-size: 1.05rem;
-      font-weight: 800;
-      border-bottom: 2px dashed #b9dcf2;
-      padding-bottom: 10px;
-      margin-bottom: 12px;
+    /* ★ 下部：詳細エリアのレイアウト調整 */
+    .detail-header-container {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 6px;
+      border-bottom: 2px dashed #b9dcf2;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+
+    .detail-header {
+      font-size: 1.0rem;
+      font-weight: 800;
       color: var(--text-main);
+    }
+
+    /* ★ 詳細エリアの「シフト申請」ボタン */
+    .btn-apply-trigger {
+      background: #ea580c;
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(234, 88, 12, 0.35);
+      white-space: nowrap;
+    }
+    .btn-apply-trigger:active {
+      transform: scale(0.96);
     }
 
     .staff-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 10px;
     }
 
@@ -186,11 +181,7 @@
       align-items: center;
     }
 
-    .staff-name { 
-      font-weight: 700; 
-      font-size: 0.88rem; 
-      color: #444;
-    }
+    .staff-name { font-weight: 700; font-size: 0.88rem; color: #444; }
     .staff-shift { 
       font-size: 0.78rem; 
       background: #f0f4f9; 
@@ -199,17 +190,24 @@
       font-weight: 800;
       color: #4f6354;
     }
-    
+
+    /* 自分（確定） */
     .is-me {
       border: 1.5px solid var(--line-green);
       background: var(--line-green-light);
     }
-    .is-me .staff-name {
-      color: #036b2d;
+    .is-me .staff-name { color: #036b2d; }
+    .is-me .staff-shift { background: var(--line-green); color: white; }
+
+    /* ★ 申請中カード（詳細エリア用） */
+    .is-pending-card {
+      border: 1.5px dashed #ea580c !important;
+      background: #ffedd5 !important;
     }
-    .is-me .staff-shift {
-      background: var(--line-green);
-      color: white;
+    .is-pending-card .staff-name { color: #9a3412 !important; }
+    .is-pending-card .staff-shift {
+      background: #ea580c !important;
+      color: #ffffff !important;
     }
 
     .empty-msg {
@@ -218,9 +216,10 @@
       font-weight: 500;
       text-align: center;
       padding: 15px 0;
+      grid-column: 1 / -1;
     }
 
-    /* 📱 モーダルダイアログ（シフト申請画面） */
+    /* モーダルダイアログ */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -234,10 +233,7 @@
       visibility: hidden;
       transition: all 0.2s ease;
     }
-    .modal-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
     .modal-content {
       background: white;
       width: 85%;
@@ -247,18 +243,8 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.15);
       text-align: center;
     }
-    .modal-title {
-      font-size: 1.1rem;
-      font-weight: 800;
-      margin-bottom: 4px;
-      color: var(--text-main);
-    }
-    .modal-date {
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: var(--line-green);
-      margin-bottom: 16px;
-    }
+    .modal-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 4px; color: var(--text-main); }
+    .modal-date { font-size: 0.9rem; font-weight: 700; color: var(--line-green); margin-bottom: 16px; }
     .shift-options {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -274,17 +260,13 @@
       font-size: 0.9rem;
       color: #475569;
       cursor: pointer;
-      transition: all 0.15s ease;
     }
     .shift-btn.selected {
       border-color: var(--line-green);
       background: var(--line-green-light);
       color: var(--line-green-dark);
     }
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-    }
+    .modal-actions { display: flex; gap: 10px; }
     .modal-btn {
       flex: 1;
       padding: 10px;
@@ -302,12 +284,10 @@
 </head>
 <body>
 
-  <!-- ステータス表示 -->
   <div id="status-card" class="card">
     <span id="status-text">🌱 認証処理中...</span>
   </div>
 
-  <!-- ログインユーザー情報 -->
   <div id="user-card" class="card" style="display: none;">
     <div class="user-info">
       <span>📅 Googleシフト</span>
@@ -315,29 +295,32 @@
     </div>
   </div>
 
-  <!-- 上エリア：月間カレンダー（自分のシフト＆申請） -->
   <div id="calendar-card" class="card card-sky" style="display: none;">
     <div id="calendar"></div>
   </div>
 
-  <!-- 下エリア：選択日の全員分シフト詳細 -->
+  <!-- 下エリア：詳細＆申請ボタン -->
   <div id="detail-card" class="card card-sky" style="display: none;">
-    <div class="detail-header">
-      📌 <span id="selected-date-text">----年--月--日</span> の出勤メンバー
+    <div class="detail-header-container">
+      <div class="detail-header">
+        📌 <span id="selected-date-text">----年--月--日</span>
+      </div>
+      <!-- ★ ここにシフト申請ボタンを設置 -->
+      <button class="btn-apply-trigger" onclick="openApplyModalForSelectedDate()">＋ シフト申請</button>
     </div>
     <div id="staff-list" class="staff-grid">
-      <!-- ここに全員のシフトが動的に表示されます -->
+      <!-- 出勤メンバー＆申請中カードを表示 -->
     </div>
   </div>
 
-  <!-- 📱 シフト申請モーダル -->
+  <!-- シフト申請モーダル -->
   <div id="shift-modal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-title">希望シフト申請</div>
       <div id="modal-date-display" class="modal-date">2026年--月--日</div>
       
       <div id="shift-options-container" class="shift-options">
-        <!-- GASから取得した申請可能シフトコードがここに並びます -->
+        <!-- GASから取得した申請可能シフトコード -->
       </div>
 
       <div class="modal-actions">
@@ -349,17 +332,17 @@
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const GAS_URL = urlParams.get('gasUrl') || "https://script.google.com/macros/s/YOUR_GAS_ID/exec";
+    const GAS_URL = urlParams.get('gasUrl') || "https://script.google.com/macros/s/AKfycbyV15S2Z2iDiHUPIPB7giLE7rhHcUCumvH9ruOzL-pMwBUvHb-WlBZ3YtQ9kSPZsZZ_mw/exec";
     const LIFF_ID = urlParams.get('liffId') || "2010578436-C5btR2HU";
 
-    let allEventsData = [];    // 確定シフトデータ
-    let myRequestsData = [];   // 自分の申請倉庫データ
-    let availableShifts = [];  // 申請可能なシフトコードリスト
-    let myStaffName = "";      // 自分の名前
-    let currentUserId = "";    // LINE User ID
-    let currentDisplayName = ""; // LINE Display Name
+    let allEventsData = [];
+    let myRequestsData = [];
+    let availableShifts = [];
+    let myStaffName = "";
+    let currentUserId = "";
+    let currentDisplayName = "";
     let calendar = null;
-    let selectedDateForApply = "";
+    let selectedDateStr = new Date().toISOString().split('T')[0];
     let selectedShiftCode = "";
 
     window.onload = function() {
@@ -378,7 +361,7 @@
 
             document.getElementById('status-card').style.display = 'none';
             document.getElementById('user-card').style.display = 'block';
-            document.getElementById('user-name-display').innerText = `${profile.displayName} `;
+            document.getElementById('user-name-display').innerText = `${profile.displayName}`;
 
             fetchShiftData(currentUserId, currentDisplayName);
           }
@@ -388,7 +371,6 @@
         });
     };
 
-    // GASからシフトデータを受信
     function fetchShiftData(userId, displayName) {
       const requestUrl = `${GAS_URL}?userId=${encodeURIComponent(userId)}&displayName=${encodeURIComponent(displayName)}`;
 
@@ -397,10 +379,7 @@
         .then(data => {
           allEventsData = data.events || [];
           myRequestsData = data.myRequests || [];
-          
-          // 固定値補完を削除。GASから受け取った配列をそのままセット
-          availableShifts = data.availableShifts || [];
-          
+          availableShifts = data.availableShifts || []; // 固定補完は完全削除
           myStaffName = data.myStaffName || "";
 
           document.getElementById('calendar-card').style.display = 'block';
@@ -414,11 +393,9 @@
         });
     }
 
-    // FullCalendar の初期化
     function initCalendar() {
       const calendarEl = document.getElementById('calendar');
 
-      // 1. 確定シフト（緑色）
       const myEvents = allEventsData
         .filter(item => item.staff === myStaffName)
         .map(item => ({
@@ -428,7 +405,6 @@
           className: 'event-confirmed'
         }));
 
-      // 2. 申請中シフト（オレンジ色・点線）
       const myReqEvents = myRequestsData.map(item => ({
         title: `申請: ${item.shift}`,
         start: item.date,
@@ -436,12 +412,9 @@
         className: 'event-request'
       }));
 
-      // 両方のバッジを合成
       const combinedEvents = [...myEvents, ...myReqEvents];
 
-      if (calendar) {
-        calendar.destroy(); // 再描画用
-      }
+      if (calendar) { calendar.destroy(); }
 
       calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
@@ -454,33 +427,46 @@
         },
         buttonText: { today: '今日' },
         events: combinedEvents,
+        /* ★ カレンダーの日付タップ時は「詳細表示の更新」のみにする（モーダルは開かない） */
         dateClick: function(info) {
-          openApplyModal(info.dateStr);
+          selectedDateStr = info.dateStr;
           renderDailyDetail(info.dateStr);
         },
         eventClick: function(info) {
-          const dateStr = info.event.startStr;
-          openApplyModal(dateStr);
-          renderDailyDetail(dateStr);
+          selectedDateStr = info.event.startStr;
+          renderDailyDetail(info.event.startStr);
         }
       });
 
       calendar.render();
     }
 
-    // 日別詳細描画
+    // 日別詳細エリアの描画（出勤者 ＋ 自分の申請中シフト）
     function renderDailyDetail(dateStr) {
       document.getElementById('selected-date-text').innerText = formatDateJp(dateStr);
       const listEl = document.getElementById('staff-list');
       listEl.innerHTML = "";
 
       const targetEvents = allEventsData.filter(item => item.date === dateStr);
+      const myPendingReq = myRequestsData.find(item => item.date === dateStr);
 
-      if (targetEvents.length === 0) {
-        listEl.innerHTML = `<div class="empty-msg">この日の確定シフトはありません。</div>`;
+      if (targetEvents.length === 0 && !myPendingReq) {
+        listEl.innerHTML = `<div class="empty-msg">この日の確定シフト・申請情報はありません。</div>`;
         return;
       }
 
+      // 1. 自分の「申請中シフト」があれば先頭にカードとして表示
+      if (myPendingReq) {
+        const div = document.createElement('div');
+        div.className = `staff-item is-pending-card`;
+        div.innerHTML = `
+          <span class="staff-name">${myStaffName || '自分'} (申請中)</span>
+          <span class="staff-shift">${myPendingReq.shift}</span>
+        `;
+        listEl.appendChild(div);
+      }
+
+      // 2. 確定出勤メンバーを表示
       targetEvents.forEach(item => {
         const isMe = (item.staff === myStaffName);
         const div = document.createElement('div');
@@ -493,7 +479,15 @@
       });
     }
 
-    // モーダルを開く
+    // 「＋ シフト申請」ボタンが押された時だけモーダルを起動
+    function openApplyModalForSelectedDate() {
+      if (!selectedDateStr) {
+        alert("日付を選択してください。");
+        return;
+      }
+      openApplyModal(selectedDateStr);
+    }
+
     function openApplyModal(dateStr) {
       selectedShiftCode = "";
       document.getElementById('modal-date-display').innerText = formatDateJp(dateStr);
@@ -501,9 +495,9 @@
       const container = document.getElementById('shift-options-container');
       container.innerHTML = "";
 
-      // 申請可能なシフトがない場合はメッセージを表示
+      // 申請可能なシフトがない場合は正しいメッセージを表示
       if (!availableShifts || availableShifts.length === 0) {
-        container.innerHTML = `<div style="grid-column: 1 / -1; color: var(--text-sub); font-weight: 500; padding: 10px 0;">申請可能なシフトがありません</div>`;
+        container.innerHTML = `<div style="grid-column: 1 / -1; color: var(--text-sub); font-weight: 700; padding: 15px 0;">申請可能なシフトがありません</div>`;
       } else {
         availableShifts.forEach(code => {
           const btn = document.createElement('button');
@@ -517,19 +511,16 @@
       document.getElementById('shift-modal').classList.add('active');
     }
 
-    // シフト選択時のボタン制御
     function selectShiftCode(code, btnEl) {
       document.querySelectorAll('.shift-btn').forEach(b => b.classList.remove('selected'));
       btnEl.classList.add('selected');
       selectedShiftCode = code;
     }
 
-    // モーダルを閉じる
     function closeModal() {
       document.getElementById('shift-modal').classList.remove('active');
     }
 
-    // 📝 GASに申請リクエストを送信
     function submitShiftRequest() {
       if (!selectedShiftCode) {
         alert("希望のシフトを選択してください。");
@@ -538,7 +529,7 @@
 
       const postUrl = `${GAS_URL}?action=submitRequest` +
         `&staffName=${encodeURIComponent(myStaffName)}` +
-        `&targetDate=${encodeURIComponent(selectedDateForApply)}` +
+        `&targetDate=${encodeURIComponent(selectedDateStr)}` +
         `&shiftCode=${encodeURIComponent(selectedShiftCode)}` +
         `&userId=${encodeURIComponent(currentUserId)}` +
         `&displayName=${encodeURIComponent(currentDisplayName)}`;
@@ -549,7 +540,6 @@
           if (res.status === "success") {
             alert("シフト申請を送信しました！");
             closeModal();
-            // データを再読み込みしてカレンダーを更新
             fetchShiftData(currentUserId, currentDisplayName);
           } else {
             alert("エラー: " + (res.message || "送信に失敗しました"));
@@ -560,7 +550,6 @@
         });
     }
 
-    // 日付フォーマット調整
     function formatDateJp(dateStr) {
       if (!dateStr) return "";
       const parts = dateStr.split('-');

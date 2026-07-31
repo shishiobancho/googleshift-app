@@ -397,16 +397,17 @@
         .then(data => {
           allEventsData = data.events || [];
           myRequestsData = data.myRequests || [];
+          
+          // 固定値補完を削除。GASから受け取った配列をそのままセット
           availableShifts = data.availableShifts || [];
+          
           myStaffName = data.myStaffName || "";
 
           document.getElementById('calendar-card').style.display = 'block';
           document.getElementById('detail-card').style.display = 'block';
 
           initCalendar();
-
-          const todayStr = new Date().toISOString().split('T')[0];
-          renderDailyDetail(todayStr);
+          renderDailyDetail(selectedDateStr);
         })
         .catch(err => {
           alert("データ取得に失敗しました: " + err);
@@ -494,20 +495,15 @@
 
     // モーダルを開く
     function openApplyModal(dateStr) {
-      if (!myStaffName) {
-        alert("スタッフマスタにアカウントが紐付けられていないため申請できません。");
-        return;
-      }
-
-      selectedDateForApply = dateStr;
       selectedShiftCode = "";
       document.getElementById('modal-date-display').innerText = formatDateJp(dateStr);
 
       const container = document.getElementById('shift-options-container');
       container.innerHTML = "";
 
-      if (availableShifts.length === 0) {
-        container.innerHTML = `<div style="grid-column: span 2; color:#888;">申請可能なシフトがありません</div>`;
+      // 申請可能なシフトがない場合はメッセージを表示
+      if (!availableShifts || availableShifts.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1 / -1; color: var(--text-sub); font-weight: 500; padding: 10px 0;">申請可能なシフトがありません</div>`;
       } else {
         availableShifts.forEach(code => {
           const btn = document.createElement('button');

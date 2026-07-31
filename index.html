@@ -1,381 +1,182 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Googleシフト[カレンダー]</title>
+// Webからのリクエスト受取（データ取得 ＆ 申請登録）
+function doGet(e) {
+  const params = e.parameter;
+  const action = params.action;
+
+  // 💡 シフト申請の保存処理
+  if (action === "submitRequest") {
+    return handleApplyShift(params);
+  }
+
+  // 💡 カレンダー表示用のデータ取得処理
+  const userId = params.userId || "";
+  const displayName = params.displayName || "";
+  const data = getShiftDataForWeb(userId, displayName);
+
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ==========================================
+// 📱 WEBカレンダー用データ取得（確定シフト＋可能コード＋自分の申請）
+// ==========================================
+function getShiftDataForWeb(lineUserId, lineDisplayName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
   
-  <!-- LINE LIFF SDK -->
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  
-  <!-- FullCalendar CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-  
-  <!-- Google Fonts（丸ゴシック：M PLUS Rounded 1c） -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
-  
-  <style>
-    :root {
-      --line-green: #06C755;
-      --line-green-light: #e8f9ee;
-      --line-green-dark: #05b34c;
-      --bg-color: #f3f5f7;
+  // 1. スタッフマスタからスタッフ名を特定
+  let currentStaffName = "";
+  const staffSheet = ss.getSheetByName("スタッフマスタ");
+  if (staffSheet) {
+    const staffData = staffSheet.getDataRange().getValues();
+    for (let i = 1; i < staffData.length; i++) {
+      let name = String(staffData[i][1]).trim();
+      let uId = String(staffData[i][3]).trim();
+      let nick = String(staffData[i][4]).trim();
       
-      /* 💡 外枠用のハッキリした爽やかな空色 */
-      --sky-blue-bg: #E0F2FE; 
-      --sky-blue-border: #BAE6FD;
-
-      --card-bg: #ffffff;
-      --text-main: #2b2b2b;
-      --text-sub: #777777;
-    }
-
-    body {
-      font-family: 'M PLUS Rounded 1c', -apple-system, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      margin: 0;
-      padding: 12px;
-      line-height: 1.5;
-    }
-
-    /* 共通カードスタイル */
-    .card {
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-      border: 1px solid #eaeaea;
-    }
-
-    /* 💡 外側のカード背景（しっかりわかる鮮やかな空色） */
-    .card-sky {
-      background-color: var(--sky-blue-bg) !important;
-      border: 1px solid var(--sky-blue-border) !important;
-    }
-
-    /* ヘッダー・ユーザー情報 */
-    .user-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 14px;
-      font-weight: 700;
-    }
-    .user-name {
-      color: var(--line-green);
-      background: var(--line-green-light);
-      padding: 3px 10px;
-      border-radius: 12px;
-    }
-
-    /* 💡 カレンダー本体の領域調整 */
-    #calendar {
-      max-width: 100%;
-    }
-    
-    /* 💡 カレンダーのマス目・テーブル部分を「純白」に固定 */
-    .fc .fc-view-harness,
-    .fc .fc-scrollgrid {
-      background-color: #ffffff !important;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    }
-
-    /* FullCalendarデザインのLINE風カスタマイズ */
-    .fc .fc-toolbar-title { 
-      font-size: 1.15rem !important; 
-      font-weight: 800 !important; 
-      color: var(--text-main);
-    }
-    .fc .fc-button-primary { 
-      background-color: var(--line-green) !important; 
-      border: none !important;
-      border-radius: 20px !important;
-      font-weight: 700 !important;
-      font-size: 0.85rem !important;
-      padding: 4px 12px !important;
-      box-shadow: 0 2px 4px rgba(6, 199, 85, 0.2);
-    }
-    .fc .fc-button-primary:hover, .fc .fc-button-primary:active {
-      background-color: var(--line-green-dark) !important;
-    }
-    
-    /* 曜日ヘッダー＆日付のカラー設定（日曜：赤、土曜：青） */
-    .fc .fc-col-header-cell-cushion {
-      font-weight: 800;
-      font-size: 0.85rem;
-      padding: 8px 0 !important;
-    }
-    .fc-daygrid-day-number { 
-      font-size: 0.85rem; 
-      font-weight: 700;
-      color: #555555; 
-    }
-    
-    /* 日曜日 (赤) */
-    .fc-day-sun .fc-col-header-cell-cushion,
-    .fc-day-sun .fc-daygrid-day-number {
-      color: #e53e3e !important;
-    }
-    /* 土曜日 (青) */
-    .fc-day-sat .fc-col-header-cell-cushion,
-    .fc-day-sat .fc-daygrid-day-number {
-      color: #3182ce !important;
-    }
-
-    /* 自分のシフトバッジ */
-    .fc-event {
-      border: none !important;
-      border-radius: 10px !important;
-      padding: 3px 6px !important;
-      font-size: 0.75rem !important;
-      font-weight: 700 !important;
-      text-align: center;
-      background-color: var(--line-green) !important;
-      color: white !important;
-      box-shadow: 0 2px 4px rgba(6, 199, 85, 0.25);
-    }
-
-    /* 当日の背景ハイライト */
-    .fc .fc-day-today {
-      background-color: #f0fdf4 !important;
-    }
-
-    /* 下エリア：日別詳細リスト */
-    .detail-header {
-      font-size: 1.05rem;
-      font-weight: 800;
-      border-bottom: 2px dashed #b9dcf2;
-      padding-bottom: 10px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--text-main);
-    }
-
-    .staff-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
-      gap: 10px;
-    }
-
-    .staff-item {
-      background: #ffffff;
-      border: 1px solid #dce7f5;
-      border-radius: 12px;
-      padding: 10px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .staff-name { 
-      font-weight: 700; 
-      font-size: 0.88rem; 
-      color: #444;
-    }
-    .staff-shift { 
-      font-size: 0.78rem; 
-      background: #f0f4f9; 
-      padding: 3px 8px; 
-      border-radius: 8px;
-      font-weight: 800;
-      color: #4f6354;
-    }
-    
-    /* 自分（ログインユーザー）のカード強調 */
-    .is-me {
-      border: 1.5px solid var(--line-green);
-      background: var(--line-green-light);
-    }
-    .is-me .staff-name {
-      color: #036b2d;
-    }
-    .is-me .staff-shift {
-      background: var(--line-green);
-      color: white;
-    }
-
-    .empty-msg {
-      color: var(--text-sub);
-      font-size: 0.85rem;
-      font-weight: 500;
-      text-align: center;
-      padding: 15px 0;
-    }
-
-    /* ステータス表示 */
-    #status-card { text-align: center; font-size: 0.9rem; font-weight: 700; color: var(--text-sub); }
-  </style>
-</head>
-<body>
-
-  <!-- ステータス表示 -->
-  <div id="status-card" class="card">
-    <span id="status-text">🌱 認証処理中...</span>
-  </div>
-
-  <!-- ログインユーザー情報 -->
-  <div id="user-card" class="card" style="display: none;">
-    <div class="user-info">
-      <span>📅 施設名または店舗名</span>
-      <span>ログイン: <span id="user-name-display" class="user-name">読み込み中</span></span>
-    </div>
-  </div>
-
-  <!-- 上エリア：月間カレンダー（自分のシフトのみ） -->
-  <div id="calendar-card" class="card card-sky" style="display: none;">
-    <div id="calendar"></div>
-  </div>
-
-  <!-- 下エリア：選択日の全員分シフト詳細 -->
-  <div id="detail-card" class="card card-sky" style="display: none;">
-    <div class="detail-header">
-      📌 <span id="selected-date-text">----年--月--日</span> の出勤メンバー
-    </div>
-    <div id="staff-list" class="staff-grid">
-      <!-- ここに全員のシフトが動的に表示されます -->
-    </div>
-  </div>
-
-  <script>
-    // URLからパラメータを取得（フォールバック付き）
-    const urlParams = new URLSearchParams(window.location.search);
-    const GAS_URL = urlParams.get('gasUrl') || "https://script.google.com/macros/s/YOUR_GAS_ID/exec";
-    const LIFF_ID = urlParams.get('liffId') || "2010578436-C5btR2HU";
-
-    let allEventsData = []; // GASから届いた全員の全データ
-    let myStaffName = "";   // 自分の名前
-    let calendar = null;    // FullCalendarのインスタンス
-
-    window.onload = function() {
-      liff.init({ liffId: LIFF_ID })
-        .then(() => {
-          if (!liff.isLoggedIn()) {
-            liff.login();
-            return;
-          }
-          return liff.getProfile();
-        })
-        .then(profile => {
-          if (profile) {
-            document.getElementById('status-card').style.display = 'none';
-            document.getElementById('user-card').style.display = 'block';
-            document.getElementById('user-name-display').innerText = `${profile.displayName} `;
-
-            // GASからシフトデータを取得
-            fetchShiftData(profile.userId, profile.displayName);
-          }
-        })
-        .catch(err => {
-          document.getElementById('status-text').innerText = "❌ エラー発生: " + err;
-        });
-    };
-
-    // GASからシフトデータを受信
-    function fetchShiftData(userId, displayName) {
-      const requestUrl = `${GAS_URL}?userId=${encodeURIComponent(userId)}&displayName=${encodeURIComponent(displayName)}`;
-
-      fetch(requestUrl)
-        .then(res => res.json())
-        .then(data => {
-          allEventsData = data.events || [];
-          myStaffName = data.myStaffName || "";
-
-          // 画面エリアを表示
-          document.getElementById('calendar-card').style.display = 'block';
-          document.getElementById('detail-card').style.display = 'block';
-
-          // カレンダー初期化＆描画
-          initCalendar();
-
-          // 本日の日付で詳細エリアを初期描画
-          const todayStr = new Date().toISOString().split('T')[0];
-          renderDailyDetail(todayStr);
-        })
-        .catch(err => {
-          alert("データ取得に失敗しました: " + err);
-        });
-    }
-
-    // FullCalendar の初期化
-    function initCalendar() {
-      const calendarEl = document.getElementById('calendar');
-
-      // 自分のシフトデータだけをフィルタリング
-      const myEvents = allEventsData
-        .filter(item => item.staff === myStaffName)
-        .map(item => ({
-          title: item.shift,
-          start: item.date,
-          allDay: true
-        }));
-
-      calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'ja',
-        height: 'auto',
-        headerToolbar: {
-          left: 'title',
-          center: '',
-          right: 'prev,today,next'
-        },
-        buttonText: {
-          today: '今日'
-        },
-        events: myEvents, // 自分のデータのみ描画
-        dateClick: function(info) {
-          renderDailyDetail(info.dateStr);
-        },
-        eventClick: function(info) {
-          const dateStr = info.event.startStr;
-          renderDailyDetail(dateStr);
-        }
-      });
-
-      calendar.render();
-    }
-
-    // 下エリア：指定した日付の「全員分」シフト詳細を描画
-    function renderDailyDetail(dateStr) {
-      document.getElementById('selected-date-text').innerText = formatDateJp(dateStr);
-      const listEl = document.getElementById('staff-list');
-      listEl.innerHTML = "";
-
-      // その日の全スタッフのシフトを抽出
-      const targetEvents = allEventsData.filter(item => item.date === dateStr);
-
-      if (targetEvents.length === 0) {
-        listEl.innerHTML = `<div class="empty-msg">この日のシフトデータ（または公開データ）はありません。</div>`;
-        return;
+      if ((lineUserId && uId === lineUserId) || (lineDisplayName && nick === lineDisplayName)) {
+        currentStaffName = name;
+        break;
       }
+    }
+  }
 
-      // 出勤メンバー一覧を作成
-      targetEvents.forEach(item => {
-        const isMe = (item.staff === myStaffName);
-        const div = document.createElement('div');
-        div.className = `staff-item ${isMe ? 'is-me' : ''}`;
-        div.innerHTML = `
-          <span class="staff-name">${item.staff}${isMe ? ' (自分)' : ''}</span>
-          <span class="staff-shift">${item.shift}</span>
-        `;
-        listEl.appendChild(div);
-      });
+  // 2. 申請可能なシフトコード（申請列が 〇 のもの）を取得
+  const availableShifts = [];
+  const codeSheet = ss.getSheetByName("シフトコード");
+  if (codeSheet) {
+    const codeData = codeSheet.getDataRange().getValues();
+    for (let i = 1; i < codeData.length; i++) {
+      let code = String(codeData[i][0]).trim();
+      let isAllow = String(codeData[i][4]).trim(); // G列（インデックス4）
+      if (code && (isAllow === "〇" || isAllow === "O" || isAllow === "0")) {
+        availableShifts.push(code);
+      }
+    }
+  }
+
+  // 3. 「申請倉庫」から自分の申請データを取得
+  const myRequests = [];
+  const reqSheet = ss.getSheetByName("申請倉庫");
+  if (reqSheet && currentStaffName) {
+    const reqData = reqSheet.getDataRange().getValues();
+    for (let i = 1; i < reqData.length; i++) {
+      let sName = String(reqData[i][1]).trim();
+      let rawDate = reqData[i][2];
+      let shiftCode = String(reqData[i][3]).trim();
+
+      if (sName === currentStaffName && rawDate) {
+        let dateStr = formatDateStr(rawDate);
+        if (dateStr) {
+          myRequests.push({
+            date: dateStr,
+            shift: shiftCode
+          });
+        }
+      }
+    }
+  }
+
+  // 4. シフトデータシートから確定シフトの取得（今月以降＆IS_PUBLISHED=TRUE）
+  const resultEvents = [];
+  const dataSheet = ss.getSheetByName("シフトデータ");
+  if (dataSheet && dataSheet.getLastRow() >= 2) {
+    const allData = dataSheet.getRange(1, 1, dataSheet.getLastRow(), 4).getValues();
+    const currentYM = Utilities.formatDate(new Date(), "JST", "yyyy-MM");
+
+    const publishedMonths = new Set();
+    for (let i = 0; i < allData.length; i++) {
+      let ym = formatDateStr(allData[i][0]).substring(0, 7);
+      if (allData[i][1] === "STATUS" && allData[i][2] === "IS_PUBLISHED") {
+        let val = allData[i][3];
+        let isPublished = (val === true || String(val).toUpperCase().trim() === "TRUE");
+        if (isPublished && ym && ym >= currentYM) {
+          publishedMonths.add(ym);
+        }
+      }
     }
 
-    // 日付フォーマット調整 (yyyy-mm-dd ➔ yyyy年m月d日)
-    function formatDateJp(dateStr) {
-      if (!dateStr) return "";
-      const parts = dateStr.split('-');
-      if (parts.length !== 3) return dateStr;
-      return `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
+    for (let i = 0; i < allData.length; i++) {
+      let ym = formatDateStr(allData[i][0]).substring(0, 7);
+      if (publishedMonths.has(ym) && allData[i][1] !== "STATUS") {
+        let dateStr = formatDateStr(allData[i][1]);
+        let staffName = String(allData[i][2]).trim();
+        let shiftType = String(allData[i][3]).trim();
+
+        if (dateStr && staffName && shiftType) {
+          resultEvents.push({
+            start: dateStr,
+            date: dateStr,
+            staff: staffName,
+            shift: shiftType
+          });
+        }
+      }
     }
-  </script>
-</body>
-</html>
+  }
+
+  return {
+    myStaffName: currentStaffName,
+    availableShifts: availableShifts,
+    myRequests: myRequests,
+    events: resultEvents
+  };
+}
+
+// 💡 申請データの書き込み処理
+function handleApplyShift(params) {
+  const staffName = params.staffName;
+  const targetDate = params.targetDate;
+  const shiftCode = params.shiftCode;
+
+  if (!staffName || !targetDate || !shiftCode) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "パラメータ不足" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let reqSheet = ss.getSheetByName("申請倉庫");
+  if (!reqSheet) {
+    reqSheet = ss.insertSheet("申請倉庫");
+    reqSheet.appendRow(["送信日時", "スタッフ名", "希望日付", "希望シフトコード"]);
+  }
+
+  // 同一スタッフ・同一日付の過去申請があれば更新、なければ末尾追加
+  const data = reqSheet.getDataRange().getValues();
+  let updated = false;
+  const now = Utilities.formatDate(new Date(), "JST", "yyyy/MM/dd HH:mm:ss");
+
+  for (let i = 1; i < data.length; i++) {
+    let sName = String(data[i][1]).trim();
+    let dStr = formatDateStr(data[i][2]);
+    if (sName === staffName && dStr === targetDate) {
+      reqSheet.getRange(i + 1, 1).setValue(now);
+      reqSheet.getRange(i + 1, 4).setValue(shiftCode);
+      updated = true;
+      break;
+    }
+  }
+
+  if (!updated) {
+    reqSheet.appendRow([now, staffName, targetDate, shiftCode]);
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// 日付フォーマット共通関数
+function formatDateStr(rawDate) {
+  if (!rawDate) return "";
+  if (rawDate instanceof Date) {
+    return Utilities.formatDate(rawDate, "JST", "yyyy-MM-dd");
+  }
+  let str = String(rawDate).trim().replace(/\//g, "-");
+  let parts = str.split("-");
+  if (parts.length === 3) {
+    let y = parts[0];
+    let m = parts[1].padStart(2, '0');
+    let d = parts[2].padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  return "";
+}
